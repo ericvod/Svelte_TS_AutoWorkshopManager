@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Veiculo {
+  placa           String            @id
+  chassi          String
+  marca           String
+  modelo          String
+  ano             Int
+  cor             String
+  proprietario    Proprietario      @relation(fields: [proprietario_id], references: [proprietario_id])
+  proprietario_id Int
+  ordensDeServico OrdensDeServico[]
+  defeitos        VeiculoDefeito[]
+}
+
+model Proprietario {
+  proprietario_id Int       @id @default(autoincrement())
+  nome            String
+  telefone        String
+  email           String
+  endereco        String
+  veiculos        Veiculo[]
+}
+
+model Peca {
+  peca_id           Int              @id @default(autoincrement())
+  nome              String           @unique
+  preco             Float
+  quantidade_estoque Int
+  historicoReparos  HistoricoReparo[]
+}
+
+model OrdensDeServico {
+  os_id              Int               @id @default(autoincrement())
+  placa              String
+  veiculo            Veiculo           @relation(fields: [placa], references: [placa])
+  data_abertura      DateTime
+  data_fechamento    DateTime?
+  status             String            // Aberta, Em Progresso, Concluída
+  descricao_problema String
+  descricao_servico  String
+  ordensPrestadores  OrdensPrestadores[]
+  historicoReparos   HistoricoReparo[]
+}
+
+model OrdensPrestadores {
+  os_id            Int
+  prestador_id     Int
+  data_inicio      DateTime
+  data_fim         DateTime
+  descricao_tarefa String
+  ordemDeServico   OrdensDeServico @relation(fields: [os_id], references: [os_id])
+  prestador        Prestador       @relation(fields: [prestador_id], references: [prestador_id])
+  
+  @@id([os_id, prestador_id])
+}
+
+model HistoricoReparo {
+  historico_id     Int             @id @default(autoincrement())
+  os_id            Int
+  ordemDeServico   OrdensDeServico @relation(fields: [os_id], references: [os_id])
+  data_reparo      DateTime
+  descricao_reparo String
+  peca_usada       String
+  custo_reparo     Float?
+  peca             Peca            @relation(fields: [peca_usada], references: [nome])
+}
+
+model Defeito {
+  defeito_id Int       @id @default(autoincrement())
+  nome       String
+  descricao  String
+  veiculos   VeiculoDefeito[]
+}
+
+model Prestador {
+  prestador_id Int                 @id @default(autoincrement())
+  nome         String
+  telefone     String
+  email        String
+  especialidade String
+  ordensPrestadores OrdensPrestadores[]
+}
+
+model VeiculoDefeito {
+  veiculo_placa String
+  veiculo       Veiculo @relation(fields: [veiculo_placa], references: [placa])
+  defeito_id    Int
+  defeito       Defeito @relation(fields: [defeito_id], references: [defeito_id])
+  
+  @@id([veiculo_placa, defeito_id])
+}
