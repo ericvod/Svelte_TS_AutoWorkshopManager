@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { writable, type Writable } from 'svelte/store';
+  import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+  import { writable, type Writable } from "svelte/store";
 
   type OrdemDeServico = {
     os_id: number;
@@ -19,7 +19,7 @@
   const ordensDeServico: Writable<OrdemDeServico[]> = writable([]);
 
   onMount(async () => {
-    const response = await fetch('/api/ordensdeservico');
+    const response = await fetch("/api/ordensdeservico");
     if (response.ok) {
       const data: OrdemDeServico[] = await response.json();
       ordensDeServico.set(data);
@@ -34,6 +34,69 @@
     goto(`/ordensdeservico/editar/${os_id}`);
   }
 </script>
+
+<div class="btn-group" role="group" aria-label="Basic mixed styles example">
+  <button type="button" class="btn btn-danger">Left</button>
+  <button type="button" class="btn btn-warning">Middle</button>
+  <button type="button" class="btn btn-success">Right</button>
+</div>
+
+<div class="container">
+  <nav class="nav btn-group">
+    <button on:click={() => navigateTo("/")}>Home</button>
+    <button on:click={() => navigateTo("/proprietarios")}
+      >Gerenciar Proprietários</button
+    >
+    <button on:click={() => navigateTo("/veiculos")}>Gerenciar Veículos</button>
+    <button on:click={() => navigateTo("/prestadores")}
+      >Gerenciar Prestadores</button
+    >
+    <button on:click={() => navigateTo("/ordensdeservico")}
+      >Gerenciar Ordens de Serviço</button
+    >
+    <button on:click={() => navigateTo("/ordensprestadores")}
+      >Gerenciar Ordens de Prestadores</button
+    >
+  </nav>
+
+  <div class="header">
+    <h1>Gerenciamento de veiculo</h1>
+    <p>
+      Bem-vindo ao sistema de gerenciamento de carros. Escolha uma das opções
+      abaixo para gerenciar os dados.
+    </p>
+  </div>
+
+  <h2>Lista de Ordens de Serviço</h2>
+  <div>
+    {#each $ordensDeServico as ordem}
+      <div class="ordemdeservico">
+        <p><strong>Veículo:</strong> {ordem.placa} - {ordem.veiculo.modelo}</p>
+        <p>
+          <strong>Data de Abertura:</strong>
+          {new Date(ordem.data_abertura).toLocaleDateString()}
+        </p>
+        {#if ordem.data_fechamento}
+          <p>
+            <strong>Data de Fechamento:</strong>
+            {new Date(ordem.data_fechamento).toLocaleDateString()}
+          </p>
+        {/if}
+        <p><strong>Status:</strong> {ordem.status}</p>
+        <p>
+          <strong>Descrição do Problema:</strong>
+          {ordem.descricao_problema}
+        </p>
+        <p><strong>Descrição do Serviço:</strong> {ordem.descricao_servico}</p>
+        <button
+          class="edit-button"
+          type="button"
+          on:click={() => editOrdemDeServico(ordem.os_id)}>Editar</button
+        >
+      </div>
+    {/each}
+  </div>
+</div>
 
 <style>
   .container {
@@ -85,36 +148,3 @@
     background-color: #218838;
   }
 </style>
-
-<div class="container">
-  <nav class="nav">
-    <button on:click={() => navigateTo('/')}>Home</button>
-    <button on:click={() => navigateTo('/proprietarios')}>Gerenciar Proprietários</button>
-    <button on:click={() => navigateTo('/veiculos')}>Gerenciar Veículos</button>
-    <button on:click={() => navigateTo('/prestadores')}>Gerenciar Prestadores</button>
-    <button on:click={() => navigateTo('/ordensdeservico')}>Gerenciar Ordens de Serviço</button>
-    <button on:click={() => navigateTo('/ordensprestadores')}>Gerenciar Ordens de Prestadores</button>
-  </nav>
-  
-  <div class="header">
-    <h1>Administração de Oficina</h1>
-    <p>Bem-vindo ao sistema de administração da oficina. Escolha uma das opções abaixo para gerenciar os dados.</p>
-  </div>
-  
-  <h2>Lista de Ordens de Serviço</h2>
-  <div>
-    {#each $ordensDeServico as ordem}
-      <div class="ordemdeservico">
-        <p><strong>Veículo:</strong> {ordem.placa} - {ordem.veiculo.modelo}</p>
-        <p><strong>Data de Abertura:</strong> {new Date(ordem.data_abertura).toLocaleDateString()}</p>
-        {#if ordem.data_fechamento}
-          <p><strong>Data de Fechamento:</strong> {new Date(ordem.data_fechamento).toLocaleDateString()}</p>
-        {/if}
-        <p><strong>Status:</strong> {ordem.status}</p>
-        <p><strong>Descrição do Problema:</strong> {ordem.descricao_problema}</p>
-        <p><strong>Descrição do Serviço:</strong> {ordem.descricao_servico}</p>
-        <button class="edit-button" type="button" on:click={() => editOrdemDeServico(ordem.os_id)}>Editar</button>
-      </div>
-    {/each}
-  </div>
-</div>
