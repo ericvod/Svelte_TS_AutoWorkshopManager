@@ -10,93 +10,91 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Cliente {
+  id           Int         @id @default(autoincrement())
+  nome         String
+  endereco     String
+  telefone     String
+  email        String
+  data_registro DateTime    @default(now())
+  veiculos     Veiculo[]
+}
+
 model Veiculo {
-  placa           String            @id
+  placa           String             @id
   chassi          String
   marca           String
   modelo          String
   ano             Int
   cor             String
-  proprietario    Proprietario      @relation(fields: [proprietario_id], references: [proprietario_id])
-  proprietario_id Int
+  cliente_id      Int
+  cliente         Cliente            @relation(fields: [cliente_id], references: [id])
   ordensDeServico OrdensDeServico[]
-  defeitos        VeiculoDefeito[]
-}
-
-model Proprietario {
-  proprietario_id Int       @id @default(autoincrement())
-  nome            String
-  telefone        String
-  email           String
-  endereco        String
-  veiculos        Veiculo[]
-}
-
-model Peca {
-  peca_id           Int              @id @default(autoincrement())
-  nome              String           @unique
-  preco             Float
-  quantidade_estoque Int
-  historicoReparos  HistoricoReparo[]
 }
 
 model OrdensDeServico {
-  os_id              Int               @id @default(autoincrement())
-  placa              String
-  veiculo            Veiculo           @relation(fields: [placa], references: [placa])
-  data_abertura      DateTime
+  id                 Int               @id @default(autoincrement())
+  veiculo_placa      String
+  veiculo            Veiculo           @relation(fields: [veiculo_placa], references: [placa])
+  data_abertura      DateTime          @default(now())
   data_fechamento    DateTime?
   status             String            // Aberta, Em Progresso, Concluída
   descricao_problema String
   descricao_servico  String
-  ordensPrestadores  OrdensPrestadores[]
-  historicoReparos   HistoricoReparo[]
+  itens              ItensOrdemServico[]
+  funcionarios       OrdemServicoFuncionario[]
 }
 
-model OrdensPrestadores {
-  os_id            Int
-  prestador_id     Int
-  data_inicio      DateTime
-  data_fim         DateTime
-  descricao_tarefa String
-  ordemDeServico   OrdensDeServico @relation(fields: [os_id], references: [os_id])
-  prestador        Prestador       @relation(fields: [prestador_id], references: [prestador_id])
-  
-  @@id([os_id, prestador_id])
+model ItensOrdemServico {
+  id               Int               @id @default(autoincrement())
+  ordem_servico_id Int
+  ordemServico     OrdensDeServico   @relation(fields: [ordem_servico_id], references: [id])
+  servico_id       Int
+  servico          Servico           @relation(fields: [servico_id], references: [id])
+  preco_total      Float
 }
 
-model HistoricoReparo {
-  historico_id     Int             @id @default(autoincrement())
-  os_id            Int
-  ordemDeServico   OrdensDeServico @relation(fields: [os_id], references: [os_id])
-  data_reparo      DateTime
-  descricao_reparo String
-  peca_usada       String
-  custo_reparo     Float?
-  peca             Peca            @relation(fields: [peca_usada], references: [nome])
+model Servico {
+  id          Int               @id @default(autoincrement())
+  nome        String
+  descricao   String
+  preco       Float
+  itens       ItensOrdemServico[]
 }
 
-model Defeito {
-  defeito_id Int       @id @default(autoincrement())
-  nome       String
-  descricao  String
-  veiculos   VeiculoDefeito[]
+model Funcionario {
+  id              Int               @id @default(autoincrement())
+  nome            String
+  telefone        String
+  email           String
+  cargo           String
+  data_contratacao DateTime          @default(now())
+  ordensDeServico OrdemServicoFuncionario[]
 }
 
-model Prestador {
-  prestador_id Int                 @id @default(autoincrement())
-  nome         String
-  telefone     String
-  email        String
-  especialidade String
-  ordensPrestadores OrdensPrestadores[]
+model OrdemServicoFuncionario {
+  id               Int               @id @default(autoincrement())
+  ordem_servico_id Int
+  funcionario_id   Int
+  ordemServico     OrdensDeServico   @relation(fields: [ordem_servico_id], references: [id])
+  funcionario      Funcionario       @relation(fields: [funcionario_id], references: [id])
 }
 
-model VeiculoDefeito {
-  veiculo_placa String
-  veiculo       Veiculo @relation(fields: [veiculo_placa], references: [placa])
-  defeito_id    Int
-  defeito       Defeito @relation(fields: [defeito_id], references: [defeito_id])
-  
-  @@id([veiculo_placa, defeito_id])
+model Estoque {
+  id          Int         @id @default(autoincrement())
+  nome        String
+  descricao   String
+  quantidade  Int
+  preco       Float
+  compras     Compra[]
 }
+
+model Compra {
+  id          Int         @id @default(autoincrement())
+  estoque_id  Int
+  estoque     Estoque     @relation(fields: [estoque_id], references: [id])
+  data_compra DateTime    @default(now())
+  quantidade  Int
+  preco_total Float
+}
+

@@ -1,33 +1,31 @@
-import { json } from '@sveltejs/kit';
 import prisma from '$lib/prisma';
-import type { RequestEvent } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 
-export async function GET({ params }: RequestEvent) {
+// GET /api/ordensdeservico/[id] - Retrieve a single service order by ID
+export async function GET({ params }) {
   const ordemDeServico = await prisma.ordensDeServico.findUnique({
-    where: {
-      os_id: Number(params.id),
-    },
-    include: {
-      veiculo: true,
-    },
+    where: { id: Number(params.id) }
   });
-
-  if (!ordemDeServico) {
-    return new Response(null, { status: 404 });
+  if (ordemDeServico) {
+    return json(ordemDeServico);
   }
-
-  return json(ordemDeServico);
+  return json({ error: 'Ordem de Serviço não encontrada' }, { status: 404 });
 }
 
-export async function PUT({ params, request }: RequestEvent) {
+// PUT /api/ordensdeservico/[id] - Update a service order by ID
+export async function PUT({ request, params }) {
   const data = await request.json();
-
   const updatedOrdemDeServico = await prisma.ordensDeServico.update({
-    where: {
-      os_id: Number(params.id),
-    },
-    data,
+    where: { id: Number(params.id) },
+    data
   });
-
   return json(updatedOrdemDeServico);
+}
+
+// DELETE /api/ordensdeservico/[id] - Delete a service order by ID
+export async function DELETE({ params }) {
+  await prisma.ordensDeServico.delete({
+    where: { id: Number(params.id) }
+  });
+  return new Response(null, { status: 204 });
 }

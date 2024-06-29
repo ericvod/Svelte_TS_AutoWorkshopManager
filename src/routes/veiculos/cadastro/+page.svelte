@@ -1,144 +1,78 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
-  import { onMount } from "svelte";
-  import { writable, type Writable } from "svelte/store";
+  import { goto } from '$app/navigation';
+  import { writable, type Writable } from 'svelte/store';
+  import { onMount } from 'svelte';
 
-  type Proprietario = {
-    proprietario_id: number;
-    nome: string;
-  };
-
-  let placa = "";
-  let chassi = "";
-  let marca = "";
-  let modelo = "";
-  let ano: number | null = null;
-  let cor = "";
-  let proprietario_id: number | null = null;
-
-  const message = writable("");
-  const proprietarios: Writable<Proprietario[]> = writable([]);
+  let placa = '';
+  let chassi = '';
+  let marca = '';
+  let modelo = '';
+  let ano: number | '' = '';
+  let cor = '';
+  let clienteId: number | null = null;
+  const clientes: Writable<{ id: number; nome: string }[]> = writable([]);
+  const filteredClientes: Writable<{ id: number; nome: string }[]> = writable([]);
+  const message = writable('');
 
   onMount(async () => {
-    const response = await fetch("/api/proprietarios");
+    const response = await fetch('/api/clientes');
     if (response.ok) {
-      const data: Proprietario[] = await response.json();
-      proprietarios.set(data);
+      const data: { id: number; nome: string }[] = await response.json();
+      clientes.set(data);
+      filteredClientes.set(data);
     }
   });
 
-  async function salvarVeiculo() {
-    if (proprietario_id === null) {
-      message.set("Selecione um proprietário.");
-      return;
-    }
+  function navigateTo(path: string) {
+    goto(path);
+  }
 
-    const response = await fetch("/api/veiculos", {
-      method: "POST",
+  function filterClientes(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const query = input.value.toLowerCase();
+    clientes.subscribe((clientesList) => {
+      const filtered = clientesList.filter(cliente =>
+        cliente.nome.toLowerCase().includes(query)
+      );
+      filteredClientes.set(filtered);
+    });
+  }
+
+  async function salvarVeiculo() {
+    const response = await fetch('/api/veiculos', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         placa,
         chassi,
         marca,
         modelo,
-        ano,
+        ano: Number(ano),
         cor,
-        proprietario_id,
-      }),
+        clienteId
+      })
     });
 
     if (response.ok) {
-      message.set("Veículo salvo com sucesso!");
-      placa = "";
-      chassi = "";
-      marca = "";
-      modelo = "";
-      ano = null;
-      cor = "";
-      proprietario_id = null;
+      message.set('Veículo salvo com sucesso!');
+      placa = '';
+      chassi = '';
+      marca = '';
+      modelo = '';
+      ano = '';
+      cor = '';
+      clienteId = null;
       setTimeout(() => {
-        message.set("");
-        goto("/veiculos");
+        message.set('');
+        navigateTo('/veiculos');
       }, 2000);
     } else {
-      message.set("Erro ao salvar o veículo.");
+      message.set('Erro ao salvar o veículo.');
     }
   }
-
-  function navigateTo(path: string) {
-    goto(path);
-  }
 </script>
-
-<div class="container">
-  <nav class="nav">
-    <button on:click={() => navigateTo("/")}>Home</button>
-    <button on:click={() => navigateTo("/veiculos")}>Voltar</button>
-  </nav>
-  <h2>Cadastro de Veículo</h2>
-  <div class="form-group">
-    <label for="placa">Placa:</label>
-    <input
-      type="text"
-      id="placa"
-      bind:value={placa}
-      placeholder="Digite a placa"
-    />
-  </div>
-  <div class="form-group">
-    <label for="chassi">Chassi:</label>
-    <input
-      type="text"
-      id="chassi"
-      bind:value={chassi}
-      placeholder="Digite o chassi"
-    />
-  </div>
-  <div class="form-group">
-    <label for="marca">Marca:</label>
-    <input
-      type="text"
-      id="marca"
-      bind:value={marca}
-      placeholder="Digite a marca"
-    />
-  </div>
-  <div class="form-group">
-    <label for="modelo">Modelo:</label>
-    <input
-      type="text"
-      id="modelo"
-      bind:value={modelo}
-      placeholder="Digite o modelo"
-    />
-  </div>
-  <div class="form-group">
-    <label for="ano">Ano:</label>
-    <input type="number" id="ano" bind:value={ano} placeholder="Digite o ano" />
-  </div>
-  <div class="form-group">
-    <label for="cor">Cor:</label>
-    <input type="text" id="cor" bind:value={cor} placeholder="Digite a cor" />
-  </div>
-  <div class="form-group">
-    <label for="proprietario_id">Proprietário:</label>
-    <select id="proprietario_id" bind:value={proprietario_id}>
-      <option value="">Selecione um proprietário</option>
-      {#each $proprietarios as proprietario}
-        <option value={proprietario.proprietario_id}>{proprietario.nome}</option
-        >
-      {/each}
-    </select>
-  </div>
-  <div class="form-group">
-    <button on:click={salvarVeiculo}>Salvar Veículo</button>
-  </div>
-  {#if $message}
-    <div class="message">{$message}</div>
-  {/if}
-</div>
 
 <style>
   .container {
@@ -156,8 +90,7 @@
     display: block;
     margin-bottom: 0.5rem;
   }
-  .form-group input,
-  .form-group select {
+  .form-group input, .form-group select {
     width: 100%;
     padding: 0.5rem;
     border: 1px solid #ccc;
@@ -198,3 +131,50 @@
     background-color: #004494;
   }
 </style>
+
+<div class="container">
+  <nav class="nav">
+    <button on:click={() => navigateTo('/')}>Home</button>
+    <button on:click={() => navigateTo('/veiculos')}>Voltar</button>
+  </nav>
+  <h2>Cadastro de Veículo</h2>
+  <div class="form-group">
+    <label for="placa">Placa:</label>
+    <input type="text" id="placa" bind:value={placa} placeholder="Digite a placa" />
+  </div>
+  <div class="form-group">
+    <label for="chassi">Chassi:</label>
+    <input type="text" id="chassi" bind:value={chassi} placeholder="Digite o chassi" />
+  </div>
+  <div class="form-group">
+    <label for="marca">Marca:</label>
+    <input type="text" id="marca" bind:value={marca} placeholder="Digite a marca" />
+  </div>
+  <div class="form-group">
+    <label for="modelo">Modelo:</label>
+    <input type="text" id="modelo" bind:value={modelo} placeholder="Digite o modelo" />
+  </div>
+  <div class="form-group">
+    <label for="ano">Ano:</label>
+    <input type="number" id="ano" bind:value={ano} placeholder="Digite o ano" />
+  </div>
+  <div class="form-group">
+    <label for="cor">Cor:</label>
+    <input type="text" id="cor" bind:value={cor} placeholder="Digite a cor" />
+  </div>
+  <div class="form-group">
+    <label for="cliente">Cliente:</label>
+    <input type="text" id="cliente" placeholder="Digite o nome do cliente" on:input={filterClientes} />
+    <select bind:value={clienteId}>
+      {#each $filteredClientes as cliente}
+        <option value={cliente.id}>{cliente.nome}</option>
+      {/each}
+    </select>
+  </div>
+  <div class="form-group">
+    <button on:click={salvarVeiculo}>Salvar Veículo</button>
+  </div>
+  {#if $message}
+    <div class="message">{$message}</div>
+  {/if}
+</div>
