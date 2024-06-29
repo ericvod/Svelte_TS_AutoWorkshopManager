@@ -3,6 +3,7 @@
     import { writable } from 'svelte/store';
   
     let nome = '';
+    let cpf = '';
     let telefone = '';
     let email = '';
     let endereco = '';
@@ -21,6 +22,7 @@
         },
         body: JSON.stringify({
           nome,
+          cpf,
           telefone,
           email,
           endereco
@@ -30,6 +32,7 @@
       if (response.ok) {
         message.set('Cliente salvo com sucesso!');
         nome = '';
+        cpf = '';
         telefone = '';
         email = '';
         endereco = '';
@@ -110,6 +113,10 @@
     <div class="form-group">
       <label for="nome">Nome:</label>
       <input type="text" id="nome" bind:value={nome} placeholder="Digite o nome" />
+    </div>
+    <div class="form-group">
+      <label for="cpf">CPF:</label>
+      <input type="text" id="cpf" bind:value={cpf} placeholder="Digite o CPF" />
     </div>
     <div class="form-group">
       <label for="telefone">Telefone:</label>

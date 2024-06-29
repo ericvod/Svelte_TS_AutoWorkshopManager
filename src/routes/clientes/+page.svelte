@@ -6,6 +6,7 @@
     type Cliente = {
       id: number;
       nome: string;
+      cpf: string;
       telefone: string;
       email: string;
       endereco: string;
@@ -70,6 +71,7 @@
       {#each $clientes as cliente}
         <div class="cliente">
           <p><strong>Nome:</strong> {cliente.nome}</p>
+          <p><strong>CPF:</strong> {cliente.cpf}</p>
           <p><strong>Telefone:</strong> {cliente.telefone}</p>
           <p><strong>Email:</strong> {cliente.email}</p>
           <p><strong>Endereço:</strong> {cliente.endereco}</p>

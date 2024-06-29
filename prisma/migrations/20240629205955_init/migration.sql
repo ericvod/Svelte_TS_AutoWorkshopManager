@@ -2,20 +2,21 @@
 CREATE TABLE "Cliente" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "nome" TEXT NOT NULL,
-    "endereco" TEXT NOT NULL,
+    "cpf" TEXT NOT NULL,
+    "endereco" TEXT,
     "telefone" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
+    "email" TEXT,
     "data_registro" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
 CREATE TABLE "Veiculo" (
     "placa" TEXT NOT NULL PRIMARY KEY,
-    "chassi" TEXT NOT NULL,
-    "marca" TEXT NOT NULL,
-    "modelo" TEXT NOT NULL,
-    "ano" INTEGER NOT NULL,
-    "cor" TEXT NOT NULL,
+    "chassi" TEXT,
+    "marca" TEXT,
+    "modelo" TEXT,
+    "ano" INTEGER,
+    "cor" TEXT,
     "cliente_id" INTEGER NOT NULL,
     CONSTRAINT "Veiculo_cliente_id_fkey" FOREIGN KEY ("cliente_id") REFERENCES "Cliente" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -27,8 +28,8 @@ CREATE TABLE "OrdensDeServico" (
     "data_abertura" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "data_fechamento" DATETIME,
     "status" TEXT NOT NULL,
-    "descricao_problema" TEXT NOT NULL,
-    "descricao_servico" TEXT NOT NULL,
+    "descricao_problema" TEXT,
+    "descricao_servico" TEXT,
     CONSTRAINT "OrdensDeServico_veiculo_placa_fkey" FOREIGN KEY ("veiculo_placa") REFERENCES "Veiculo" ("placa") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
@@ -54,9 +55,10 @@ CREATE TABLE "Servico" (
 CREATE TABLE "Funcionario" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "nome" TEXT NOT NULL,
-    "telefone" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "cargo" TEXT NOT NULL,
+    "cpf" TEXT NOT NULL,
+    "telefone" TEXT,
+    "email" TEXT,
+    "cargo" TEXT,
     "data_contratacao" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -73,7 +75,7 @@ CREATE TABLE "OrdemServicoFuncionario" (
 CREATE TABLE "Estoque" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "nome" TEXT NOT NULL,
-    "descricao" TEXT NOT NULL,
+    "descricao" TEXT,
     "quantidade" INTEGER NOT NULL,
     "preco" REAL NOT NULL
 );
@@ -87,3 +89,9 @@ CREATE TABLE "Compra" (
     "preco_total" REAL NOT NULL,
     CONSTRAINT "Compra_estoque_id_fkey" FOREIGN KEY ("estoque_id") REFERENCES "Estoque" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Cliente_cpf_key" ON "Cliente"("cpf");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Funcionario_cpf_key" ON "Funcionario"("cpf");
