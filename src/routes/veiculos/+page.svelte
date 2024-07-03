@@ -1,7 +1,10 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { writable, type Writable } from 'svelte/store';
+  import { goto } from "$app/navigation";
+  import { onMount } from "svelte";
+  import { writable, type Writable } from "svelte/store";
+  import NavBar from "../../components/NavBar.svelte";
+  import Sidebar from "../../components/Sidebar.svelte";
+  import ContactCard from "../../components/ContactCard.svelte";
 
   type Cliente = {
     id: number;
@@ -21,111 +24,66 @@
   const veiculos: Writable<Veiculo[]> = writable([]);
 
   onMount(async () => {
-    const response = await fetch('/api/veiculos');
+    const response = await fetch("/api/veiculos");
     if (response.ok) {
       const data: Veiculo[] = await response.json();
       veiculos.set(data);
     }
   });
 
-  function navigateTo(path: string) {
-    goto(path);
-  }
-
   async function editarVeiculo(placa: string) {
-    navigateTo(`/veiculos/editar/${placa}`);
+    goto(`/veiculos/editar/${placa}`);
   }
 
   async function excluirVeiculo(placa: string) {
-    if (confirm('Tem certeza que deseja excluir este veículo?')) {
+    if (confirm("Tem certeza que deseja excluir este veículo?")) {
       const response = await fetch(`/api/veiculos/${placa}`, {
-        method: 'DELETE'
+        method: "DELETE",
       });
       if (response.ok) {
-        veiculos.update(veiculos => veiculos.filter(veiculo => veiculo.placa !== placa));
+        veiculos.update((veiculos) =>
+          veiculos.filter((veiculo) => veiculo.placa !== placa),
+        );
       }
     }
   }
 </script>
 
-<style>
-  .container {
-    max-width: 800px;
-    margin: auto;
-    padding: 1rem;
-  }
-  .nav {
-    display: flex;
-    justify-content: space-between;
-    padding: 1rem;
-    background-color: #007bff;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-  }
-  .nav button {
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    background-color: #0056b3;
-    border: none;
-    cursor: pointer;
-  }
-  .nav button:hover {
-    background-color: #004494;
-  }
-  .button {
-    padding: 0.5rem 1rem;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .button:hover {
-    background-color: #0056b3;
-  }
-  .proprietario {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-    background: #f9f9f9;
-  }
-  .veiculo {
-    padding-left: 1rem;
-    border-left: 3px solid #007bff;
-    margin-bottom: 0.5rem;
-  }
-  .actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-  }
-</style>
-
-<div class="container">
-  <nav class="nav">
-    <button on:click={() => navigateTo('/')}>Home</button>
-    <button on:click={() => navigateTo('/veiculos/cadastro')}>Cadastrar Novo Veículo</button>
-  </nav>
-  <h2>Lista de Veículos</h2>
-  <div>
-    {#each $veiculos as veiculo}
-      <div class="proprietario">                                                                          
-        <p><strong>Proprietário:</strong> {veiculo.cliente.nome}</p>
-        <div class="veiculo">
-          <p><strong>Placa:</strong> {veiculo.placa}</p>
-          <p><strong>Chassi:</strong> {veiculo.chassi}</p>
-          <p><strong>Marca:</strong> {veiculo.marca}</p>
-          <p><strong>Modelo:</strong> {veiculo.modelo}</p>
-          <p><strong>Ano:</strong> {veiculo.ano}</p>
-          <p><strong>Cor:</strong> {veiculo.cor}</p>
-          <div class="actions">
-            <button class="button" on:click={() => editarVeiculo(veiculo.placa)}>Editar</button>
-            <button class="button" on:click={() => excluirVeiculo(veiculo.placa)}>Excluir</button>
+<div class="d-flex">
+  <Sidebar />
+  <div class="flex-grow-1 p-4">
+    <NavBar />
+    <div class="container mt-4" style="overflow-y: auto; height: calc(100vh - 100px);">
+      <div class="row">
+        {#each $veiculos as veiculo}
+          <div class="col-md-4 mb-4">
+            <ContactCard>
+              <span slot="name">{veiculo.cliente.nome}</span>
+              <span slot="placa">{veiculo.placa}</span>
+              <span slot="chassi">{veiculo.chassi}</span>
+              <span slot="marca">{veiculo.marca}</span>
+              <span slot="modelo">{veiculo.modelo}</span>
+              <span slot="ano">{veiculo.ano}</span>
+              <span slot="cor">{veiculo.cor}</span>
+              <div slot="actions">
+                <button class="bg-dark btn btn-primary me-2" on:click={() => editarVeiculo(veiculo.placa)}>
+                  <i class="bi bi-pencil-fill me-1"></i> Editar
+                </button>
+                <button class="btn btn-danger" on:click={() => excluirVeiculo(veiculo.placa)}>
+                  <i class="bi bi-trash-fill me-1"></i> Excluir
+                </button>
+              </div>
+            </ContactCard>
           </div>
-        </div>
+        {/each}
       </div>
-    {/each}
+    </div>
   </div>
 </div>
+
+<style>
+  .container {
+    overflow-y: auto;
+    height: calc(100vh - 100px);
+  }
+</style>

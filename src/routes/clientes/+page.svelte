@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import { writable, type Writable } from 'svelte/store';
+    import Sidebar from '../../components/Sidebar.svelte'
   
     type Cliente = {
       id: number;
